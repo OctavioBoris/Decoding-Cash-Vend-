@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" /><link rel="manifest" href="../manifest.json" /><link rel="shortcut icon" href="../favicon.ico" type="image/x-icon" /><title>
+	Soporte - CashVend
+</title>
+
+    
+    <link rel="stylesheet" href="../Vendors/Bootstrap/bootstrap.min.css?1.35.3">
+    <link rel="stylesheet" href="../Vendors/SweetAlert2/sweetalert2.min.css?1.35.3" />
+    <link rel="stylesheet" href="../Vendors/IntlTelInput/intlTelInput.css?1.35.3" />
+    <link rel="stylesheet" href="../Vendors/Fonts/font-awesome.min.css?1.35.3">
+    <link rel="stylesheet" href="../Vendors/DataPicker/datepicker.min.css?1.35.3">
+    
+    <style>
+        body {
+            font-size: 16px;
+        }
+
+        .intl-tel-input {
+            width: calc(100% - 75px) !important;
+        }
+
+        #txtNroCelular {
+            border-top-right-radius: 0px;
+            border-bottom-right-radius: 0px;
+        }
+
+        .form-control {
+            font-weight: bold;
+        }
+
+        .fa-whatsapp {
+            color: white;
+        }
+
+        #ctl21 > div {
+            overflow: auto;
+            font-size: 12px;
+        }
+
+        table {
+            border-color: whitesmoke;
+        }
+
+        #gvExpendedoras, #gvCarritos, #gvDetalleCarrito, #gvAccesos {
+            font-size: small;
+        }
+
+            #gvCarritos tr td:first-child {
+                display: none;
+            }
+
+            #gvCarritos tr th:first-child {
+                display: none;
+            }
+
+            #gvAccesos tr td:first-child {
+                display: none;
+            }
+
+            #gvAccesos tr th:first-child {
+                display: none;
+            }
+
+        .w-50 {
+            max-width: 100px !important;
+        }
+    </style>
+
+    
+    <script src="../Vendors/jQuery/jquery.min.js?1.35.3"></script>
+    <script src="../Vendors/Bootstrap/bootstrap.min.js?1.35.3"></script>
+    <script src="../Vendors/IntlTelInput/intlTelInput.min.js?1.35.3"></script>
+    <script src="../Vendors/SweetAlert2/sweetalert2.min.js?1.35.3"></script>
+    <script src="../Vendors/DataPicker/datepicker.min.js?1.35.3"></script>
+    
+    <script>
+
+        function Init() {
+
+            let telInput = $("#txtNroCelular")
+            telInput.intlTelInput({
+                initialCountry: 'ar',
+                preferredCountries: ['ar'],
+                placeholder: 'aggressive',
+            });
+
+            telInput.off('countrychange');
+
+            telInput.on("countrychange", function () {
+                $("#hdnCodPais").val($("#txtNroCelular").intlTelInput("getSelectedCountryData").dialCode);
+            });
+            let telInputModal = $("#txttelefonoModalCanje")
+            telInputModal.intlTelInput({
+                initialCountry: 'ar',
+                preferredCountries: ['ar'],
+                placeholder: 'aggressive',
+            });
+
+            telInputModal.off('countrychange');
+
+            telInputModal.on("countrychange", function () {
+                $("#hdnCodPaisModalCanje").val($("#txttelefonoModalCanje").intlTelInput("getSelectedCountryData").dialCode);
+            });
+
+            let telInputModalPuntos = $("#txttelefonoModalPuntos")
+            telInputModal.intlTelInput({
+                initialCountry: 'ar',
+                preferredCountries: ['ar'],
+                placeholder: 'aggressive',
+            });
+
+            telInputModalPuntos.off('countrychange');
+
+            telInputModalPuntos.on("countrychange", function () {
+                $("#hdnCodPaisModalPuntos").val($("#txttelefonoModalPuntos").intlTelInput("getSelectedCountryData").dialCode);
+            });
+        }
+
+        function pageLoad() {
+
+            $(".clickable").click(function () {
+                var idCarrito = $(this).parent().children(0).html();
+                $("#hdnIdCarrito").val(idCarrito);
+                __doPostBack("btnDetalleCarrito", "");
+            });
+
+            if ($(".date-picker").length > 0) {
+
+                // Idiomas.
+                // Inglés - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                $.fn.datepicker.dates['en'] = {
+                    days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                    daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+                    daysMin: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+                    months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+                    monthsShort: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                    today: "Today",
+                    clear: "Clear",
+                    format: "mm/dd/yyyy",
+                    titleFormat: "MM yyyy", /* Leverages same syntax as 'format' */
+                    weekStart: 0
+                };
+
+                // Español - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                $.fn.datepicker.dates['es'] = {
+                    days: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+                    daysShort: ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"],
+                    daysMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+                    months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+                    monthsShort: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+                    today: "Hoy",
+                    clear: "Borrar",
+                    format: "dd/mm/yyyy",
+                    titleFormat: "MM yyyy", /* Leverages same syntax as 'format' */
+                    weekStart: 0
+                };
+
+                // parámetros de inicializacion del plugin DatePicker.
+                var DatePickerOptions = {
+                    format: 'mm/dd/yyyy',    // Formato de fecha.
+                    //weekStart: 0,                   // Primer día de la semana.
+
+                    // parametros fijos -------------------------------------------------------------------------
+                    todayBtn: true,                                             // Boton Hoy.
+                    autoclose: true,                                            // Cerrar al seleccionar.
+                    todayHighlight: true,                                       // Resaltar la fecha actual.
+                    language: 'es'                                              // Idioma.
+                }
+                $(".date-picker").datepicker(DatePickerOptions);
+                $(".date-picker").prop('readonly', true);
+            };
+        }
+
+        function MuestroSroll(){
+            document.querySelector("#mdlCarritos").style.overflowY = "scroll";
+        }
+
+        function CierroModalDetalle(){
+            $('#mdlDetalleCarrito').modal('hide');
+            MuestroSroll();
+        }
+    </script>
+</head>
+<body>
+    <form method="post" action="./" id="frmDefault" autocomplete="off">
+<div class="aspNetHidden">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="5GBBvl6jqAOf6NK6/Abhdb57I0umxNHZ11Bo7paGjhLj9NU+5r+GZILP9sRvKMXjx2KW/EcZvz3GvGcfgcoTu91O1VfmcbQMHB/pYNiOA6UCC/0PGUCWnSJKYWY9Fkc6mdDEPRDkfgpKmK3BE1d3S94mkzBf/DeSCEgfSLCbyiEyBUdrQL+u2g8BjoCGF5A10JmM9eaMo24nCwpfySkh5DeLqKSM2BbPWiEDG5avqhTojOtcgvUPc6EyHSGrP3zgsQqlABJRLeXKEXs/2Zq6X9KrGYPNioir18CuFQjKZYgFCfoeFosPcOHO7dt3BofUbQNrOMVxG9U9wECrjc1dh3fCv/urXlXJPRAazEFAwU1TsSfVhQbVLwRZFznE0ohUTCnmjzjabX8+zbj3uPJldr9X3aIn3XoSX6UF/Bcw0IcXXBQLjl8iiMhoNMd9S7wT/1tQ/VhuhH/J8TnOp0m1XrCp3PZpskpUVPyK8b7/fj5jW87opYxdsO7cTqfHWu9C" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['frmDefault'];
+if (!theForm) {
+    theForm = document.frmDefault;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<script src="/WebResource.axd?d=pynGkmcFUV13He1Qd6_TZNwnww8GcVkHOqsZoD6twDk96Q-SUIqSQ7hOE9TFJ-uIG_92XGAwRWEorDJYIAkoZg2&amp;t=637811621229275428" type="text/javascript"></script>
+
+
+<script src="/ScriptResource.axd?d=D9drwtSJ4hBA6O8UhT6CQkmh7Aiw1u8vZ2lGKP3vVSH7t-TE_N_NFaLf-ftf6S36B6h4b0hiIEnfGFtWHzCHJUDkETLiSGm_eTYuUVJ6kgu1dUfZ_YmypckGMU9hGsjQmCDh6h-nP5Mr1qARwQCH0nbyJ23JjjmHynhUdYTLhnY1&amp;t=ffffffffaa493ab8" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+if (typeof(Sys) === 'undefined') throw new Error('ASP.NET Ajax client-side framework failed to load.');
+//]]>
+</script>
+
+<script src="/ScriptResource.axd?d=JnUc-DEDOM5KzzVKtsL1tSbd5QxgyB0Yn3H1jwGqiYo-lJi1ZkRBf_GmIRVDoUmy8YTuNa8HCT4lqM-tHrwDyioF0EKn72hDGBhKnW6_nQ_AwT4ou6BYRuGMImPoj1hJWxL_FqWz6hQEmn5c4KtPm625V_DA1AP9Gt3U33cgT8El9p_o8MmKIDoqSBpcg1_F0&amp;t=ffffffffaa493ab8" type="text/javascript"></script>
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="798B3C0D" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="q85mv6nrOMqrsZbgOYGm4bgjSF4ZuCr5jJr4biN75tGeVVmTHllR2HykyQtyeIN3S6bFjNu8yEVhrUzilqu7ILJsU9xIY/0IUXZm1XPeI0vcKaxcB9NlQ/Fn6Ckg9n6pg3CzXuz8iqhw/EIQWyhIR/SCWNXTEYXSxkkW9UUYsvSXKE+A18XHWCWLvfCsgsRvqi9s0p25TLGNO6nuDTjzh0cp4WFiyk8My/UYuuxlR2L703A6ejQX0BjbBnplNaalg06D88aMJJH1IfDxlnmUulqkHoIAD3nAiRvfXXUoOQbPkrnU7Cm6VsPcs8klsowBP5S68ZX938yeRKGSWzNspFPVwWIUko7lE3dzyolxEAGLJNo45ZFb0f7//+zgyMfAWn3JNG5xKfVgPMvjyaUdure7+HtiV9mZehRZE1s3Xr5e+zuE7VDj4ybjxbLAGPBybC7A6e24083P6vokH/hF7NsvUho7JgLUcfGlk1OWdCcfIqRzusr1PACHK9DmEOodxgjEUJ+405DMpphA6ajL4fFOvpbVtHdiOMlZsoGnLTEEaXsV3hKwrHCglCQGgCqf" />
+</div>
+        <script type="text/javascript">
+//<![CDATA[
+Sys.WebForms.PageRequestManager._initialize('ctl07', 'frmDefault', ['fupDefault','upDefault','fupTiendaTienda','upTiendaTienda','fupCarritoTienda','upCarritoTienda','fupDetalleCarrito','upDetalleCarrito','fupAccesosTienda','upAccesosTienda','fupCanjeModal','upCanjeModal','fupBotonesMC','upBotonesMC','fupModalPuntos','upModalPuntos','fupBotonesMP','upBotonesMP'], [], [], 30, '');
+//]]>
+</script>
+
+
+        <div id="upDefault">
+	
+
+                <div id="pnlLogin">
+		
+
+                    <div class="text-center" style="background-color: #FFCC00; padding: 25px;">
+                        <img src="../Images/support.png" style="width:100px;" />
+                    </div>
+                    <div class="text-center m-5">
+                        <h4>
+                            <small>
+                                <span class="text-muted">Inicio de sesión para</span>
+                            </small>
+                            <br />
+                            <span>Soporte Técnico</span>
+                        </h4>
+                    </div>
+                    <div class="container">
+
+                        <div class="form-group">
+                            <span>Usuario</span>
+                            <input name="txtUsername" type="text" id="txtUsername" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <span>Contraseña</span>
+                            <input name="txtPassword" type="text" id="txtPassword" class="form-control" style="text-security: disc; -webkit-text-security: disc;" />
+                        </div>
+
+                        <input type="submit" name="btnLogin" value="Aceptar" id="btnLogin" class="btn btn-primary w-100" />
+                    </div>
+                
+	</div>
+
+                
+            
+</div>
+
+        <div id="mdlTienda" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Estado de la Tienda</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+                        <div id="upTiendaTienda">
+	
+
+                                <select name="ddlTiendaTienda" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ddlTiendaTienda\&#39;,\&#39;\&#39;)&#39;, 0)" id="ddlTiendaTienda" class="form-control">
+
+	</select>
+                                <br />
+                                <div>
+
+	</div>
+                            
+</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mdlCarritos" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ultimos 30 carritos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="upCarritoTienda">
+	
+
+                                <div class="input-group">
+                                    <select name="ddlCarritoTienda" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ddlCarritoTienda\&#39;,\&#39;\&#39;)&#39;, 0)" id="ddlCarritoTienda" class="form-control">
+
+	</select>
+                                    <div class="input-group-append">
+                                        <a id="lnkBtnCarritos" class="form-control btn btn-info" href="javascript:__doPostBack(&#39;lnkBtnCarritos&#39;,&#39;&#39;)">
+                                            <i class="fa fa-refresh" aria-hidden="true"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <span id="lblFechaDesde" class="form-control">Desde</span>
+                                    <div class="input-group-append">
+                                        <input name="txtCarritoFechaDesde" type="text" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;txtCarritoFechaDesde\&#39;,\&#39;\&#39;)&#39;, 0)" onkeypress="if (WebForm_TextBoxKeyHandler(event) == false) return false;" id="txtCarritoFechaDesde" class="form-control date-picker" autocomplete="off" />
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <span id="Label1" class="form-control">Hasta</span>
+                                    <div class="input-group-append">
+                                        <input name="txtCarritoFechaHasta" type="text" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;txtCarritoFechaHasta\&#39;,\&#39;\&#39;)&#39;, 0)" onkeypress="if (WebForm_TextBoxKeyHandler(event) == false) return false;" id="txtCarritoFechaHasta" class="form-control date-picker" autocomplete="off" />
+                                    </div>
+                                </div>
+
+                                <br />
+                                <div>
+
+	</div>
+
+                                <input type="hidden" name="hdnIdCarrito" id="hdnIdCarrito" />
+                                <input type="submit" name="btnDetalleCarrito" value="Detalle carrito" id="btnDetalleCarrito" class="d-none" />
+                            
+</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mdlDetalleCarrito" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Detalle del Carrito</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="upDetalleCarrito">
+	
+
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" style="width: 40px;">
+                                            <i class="fa fa-user-o" aria-hidden="true"></i>
+                                        </span>
+                                    </div>
+                                    <span id="lblDetalleCarritoCuenta" class="form-control form-control-sm">Cuenta</span>
+                                </div>
+
+                                <div id="divDetalleCarritoCelular" class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" style="width: 40px;">
+                                            <i class="fa fa-mobile" aria-hidden="true"></i>
+                                        </span>
+                                    </div>
+                                    <span id="lblDetalleCarritoCelular" class="form-control form-control-sm">Celular</span>
+                                    <div class="input-group-append">
+                                        <span class="input-group-append">
+                                            <a id="lnBtnWhatsAppp" class="btn btn-success btn-sm" href="javascript:__doPostBack(&#39;lnBtnWhatsAppp&#39;,&#39;&#39;)" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                                                <i class="fa fa-whatsapp" aria-hidden="true"></i>
+                                            </a>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div id="divDetalleCarritoEmail" class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" style="width: 40px;">
+                                            <i class="fa fa-envelope-o" aria-hidden="true"></i>
+                                        </span>
+                                    </div>
+                                    <span id="lblDetalleCarritoEmail" class="form-control form-control-sm">Email</span>
+                                </div>
+
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fa" aria-hidden="true">Fecha-Hora Alta</i>
+                                        </span>
+                                    </div>
+                                    <span id="lblDetalleCarritoHoraAlta" class="form-control form-control-sm">Hora</span>
+                                </div>
+
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fa" aria-hidden="true">Fecha-Hora Pago</i>
+                                        </span>
+                                    </div>
+                                    <span id="lblDetalleCarritoHoraPago" class="form-control form-control-sm">Hora</span>
+                                </div>
+
+                                <div>
+
+	</div>
+                            
+</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="CierroModalDetalle();">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mdlAccesos" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ultimos accesos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="upAccesosTienda">
+	
+
+                                <div class="input-group">
+                                    <select name="ddlAccesosTienda" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ddlAccesosTienda\&#39;,\&#39;\&#39;)&#39;, 0)" id="ddlAccesosTienda" class="form-control">
+
+	</select>
+                                    <div class="input-group-append">
+                                        <a id="lnkBtnAccesos" class="form-control btn btn-info" href="javascript:__doPostBack(&#39;lnkBtnAccesos&#39;,&#39;&#39;)">
+                                            <i class="fa fa-refresh" aria-hidden="true"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <span id="Label2" class="form-control">Desde</span>
+                                    <div class="input-group-append">
+                                        <input name="txtAccesosFechaDesde" type="text" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;txtAccesosFechaDesde\&#39;,\&#39;\&#39;)&#39;, 0)" onkeypress="if (WebForm_TextBoxKeyHandler(event) == false) return false;" id="txtAccesosFechaDesde" class="form-control date-picker" autocomplete="off" />
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <span id="Label3" class="form-control">Hasta</span>
+                                    <div class="input-group-append">
+                                        <input name="txtAccesosFechaHasta" type="text" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;txtAccesosFechaHasta\&#39;,\&#39;\&#39;)&#39;, 0)" onkeypress="if (WebForm_TextBoxKeyHandler(event) == false) return false;" id="txtAccesosFechaHasta" class="form-control date-picker" autocomplete="off" />
+                                    </div>
+                                </div>
+
+                                <br />
+                                <div>
+
+	</div>
+
+                                <input type="hidden" name="hdnIdAcceso" id="hdnIdAcceso" />
+                            
+</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mdlCanje" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Canje de Puntos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+                        <div id="upCanjeModal">
+	
+                                <div id="pnlTelefono">
+		
+                                    <input type="hidden" name="hdnCodPaisModalCanje" id="hdnCodPaisModalCanje" />
+                                    <div class="input-group mb-3">
+                                        <input name="txttelefonoModalCanje" id="txttelefonoModalCanje" class="form-control" type="tel" placeholder="Número de celular" />
+                                        <div class="input-group-append">
+                                            <input type="submit" name="btnBuscarTelefonoModalCanje" value="Buscar" id="btnBuscarTelefonoModalCanje" class="btn btn-primary" />
+                                        </div>
+                                    </div>
+                                
+	</div>
+                                
+                                
+                                
+                            
+</div>
+                    </div>
+                    <div class="modal-footer">
+                        <div id="upBotonesMC">
+	
+                                
+                                
+                                <button type="button" id="btnCerrarModalMC" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="mdlPuntos" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Puntos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+                        <div id="upModalPuntos">
+	
+                                <div id="pnlTelefonoModalPuntos">
+		
+                                    <input type="hidden" name="hdnCodPaisModalPuntos" id="hdnCodPaisModalPuntos" />
+                                    <div class="input-group mb-3">
+                                        <input name="txttelefonoModalPuntos" id="txttelefonoModalPuntos" class="form-control" type="tel" placeholder="Número de celular" />
+                                        <div class="input-group-append">
+                                            <input type="submit" name="btnBuscarTelefonoModalPuntos" value="Buscar" id="btnBuscarTelefonoModalPuntos" class="btn btn-primary" />
+                                        </div>
+                                    </div>
+                                
+	</div>
+                                
+                                
+                                
+                            
+</div>
+                    </div>
+                    <div class="modal-footer">
+                        <div id="upBotonesMP">
+	
+                                
+                                <button type="button" id="btnCerrarMP" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+
+<script type="text/javascript">
+//<![CDATA[
+Init();
+//]]>
+</script>
+</form>
+</body>
+</html>
